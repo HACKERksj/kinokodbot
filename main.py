@@ -5,16 +5,18 @@ import os
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.types import Message
+from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN, ADMIN_IDS, CHANNELS, MOVIE_CHANNEL
 from check_subscription import check_subscription
 from dotenv import load_dotenv
+from aiogram.exceptions import TelegramBadRequest
 
 # Logging sozlamalari
 logging.basicConfig(level=logging.INFO)
 
 # Bot va Dispatcher obyektlari
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+dp = Dispatcher(storage=MemoryStorage())
 
 MOVIE_DB_FILE = "movies.json"
 USERS_DB_FILE = "users.json"
@@ -65,7 +67,7 @@ def load_users():
 
 # **Admin tekshirish funksiyasi**
 def is_admin(user_id):
-    return str(user_id) in ADMIN_IDS
+    return str(user_id) in map(str, ADMIN_IDS)
 
 # **/start buyrug‘i**
 @dp.message(Command("start"))
@@ -181,4 +183,7 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Bot to‘xtatildi!")
